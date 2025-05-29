@@ -69,7 +69,7 @@ class ShoppingCartTest {
     }
 
     @Test
-    void applyDiscount_withZeroPercentage_shouldReturnTotal() {
+    void applyDiscount_whenZeroPercent_shouldNotAffectTotalAmount() {
         cart.addItem("Apple", 10.0, 1);
 
         double discounted = cart.applyDiscount(0);
