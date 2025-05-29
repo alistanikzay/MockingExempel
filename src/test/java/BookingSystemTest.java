@@ -75,6 +75,22 @@ public class BookingSystemTest {
                 .hasMessageContaining("end time must be after start time");
     }
 
+    @Test
+    void shouldReturnFalseIfRoomNotAvailable() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.plusHours(1);
+        LocalDateTime end = now.plusHours(2);
+
+        when(timeProvider.now()).thenReturn(now);
+        when(roomRepository.isRoomAvailable(testRoom, start, end)).thenReturn(false);
+
+        boolean result = bookingSystem.bookRoom("A101", start, end, "user@example.com");
+
+        assertThat(result).isFalse();
+        verify(notificationService, never()).notifyUser(anyString());
+    }
+
+
 
 
 }
