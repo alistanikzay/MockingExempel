@@ -60,7 +60,7 @@ public class BookingSystemTest {
         assertThatThrownBy(() ->
                 bookingSystem.bookRoom("A101", pastStart, pastEnd, "user@example.com"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("start time must be in the future");
+                .hasMessageContaining("Kan inte boka tid i dåtid");
     }
 
     @Test
