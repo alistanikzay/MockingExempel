@@ -49,7 +49,7 @@ class ShoppingCartTest {
     }
 
     @Test
-    void calculateTotal_shouldReturnCorrectSum() {
+    void calculateTotal_withMultipleItems_shouldComputeAccurateSum() {
         cart.addItem("Apple", 10.0, 2);  // 20
         cart.addItem("Banana", 5.0, 3);  // 15
 
