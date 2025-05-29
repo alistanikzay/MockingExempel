@@ -36,7 +36,7 @@ class ShoppingCartTest {
     }
 
     @Test
-    void removeItem_shouldRemoveItem() {
+    void removeItem_givenExistingItem_shouldDeleteItFromCart() {
         cart.addItem("Apple", 10.0, 2);
         cart.addItem("Banana", 5.0, 1);
 
