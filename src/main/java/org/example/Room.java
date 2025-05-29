@@ -9,7 +9,7 @@ public class Room {
     private final String name;
     private final Set<Booking> bookings = new HashSet<>();
 
-    public Room(String id, int name) {
+    public Room(String id, String name) {
         this.id = id;
         this.name = String.valueOf(name);
     }

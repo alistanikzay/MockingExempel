@@ -17,7 +17,7 @@ public class BookingSystem {
         this.notificationService = notificationService;
     }
 
-    public boolean bookRoom(String roomId, LocalDateTime startTime, LocalDateTime endTime, String mail) {
+    public boolean bookRoom(String roomId, LocalDateTime startTime, LocalDateTime endTime) {
         if (startTime == null || endTime == null || roomId == null) {
             throw new IllegalArgumentException("Bokning kräver giltiga start- och sluttider samt rum-id");
         }

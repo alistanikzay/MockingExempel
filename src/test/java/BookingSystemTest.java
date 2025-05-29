@@ -1,16 +1,22 @@
 import org.example.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
 
 public class BookingSystemTest {
 
@@ -24,105 +30,140 @@ public class BookingSystemTest {
     private NotificationService notificationService;
 
     private BookingSystem bookingSystem;
-    private Room testRoom;
+
+    private Room room;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        testRoom = new Room("A101", 10);
         bookingSystem = new BookingSystem(timeProvider, roomRepository, notificationService);
+
+        room = new Room("1", "Room 1");
+        when(roomRepository.findById("1")).thenReturn(Optional.of(room));
     }
 
     @Test
-    void shouldBookRoomSuccessfully() throws NotificationException {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = now.plusHours(1);
-        LocalDateTime end = now.plusHours(2);
+    void shouldBookRoomWhenValidInput() throws NotificationException {
+        LocalDateTime startTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime endTime = startTime.plusHours(2);
 
-        when(timeProvider.getCurrentTime()).thenReturn(now);
-        when(roomRepository.findById("A101")).thenReturn(Optional.of(testRoom));
+        when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
 
-        doNothing().when(notificationService).sendBookingConfirmation(any(Booking.class));
-
-        boolean result = bookingSystem.bookRoom("A101", start, end, "user@example.com");
+        boolean result = bookingSystem.bookRoom("1", startTime, endTime);
 
         assertThat(result).isTrue();
+        verify(roomRepository).save(any(Room.class));
         verify(notificationService).sendBookingConfirmation(any(Booking.class));
     }
 
     @Test
-    void shouldNotBookRoomInThePast() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime pastStart = now.minusHours(2);
-        LocalDateTime pastEnd = now.minusHours(1);
+    void shouldThrowExceptionWhenStartTimeIsInThePast() {
+        LocalDateTime startTime = LocalDateTime.now().minusHours(1);
+        LocalDateTime endTime = startTime.plusHours(2);
 
-        when(timeProvider.now()).thenReturn(now);
+        when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
 
-        assertThatThrownBy(() ->
-                bookingSystem.bookRoom("A101", pastStart, pastEnd, "user@example.com"))
+        assertThatThrownBy(() -> bookingSystem.bookRoom("1", startTime, endTime))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("start time must be in the future");
+                .hasMessageContaining("Kan inte boka tid i dåtid");
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidBookingParameters")
+    void shouldThrowExceptionWhenInvalidParametersProvided(String roomId, LocalDateTime startTime, LocalDateTime endTime) {
+        assertThatThrownBy(() -> bookingSystem.bookRoom(roomId, startTime, endTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Bokning kräver giltiga start- och sluttider samt rum-id");
+    }
+
+    static Stream<Arguments> invalidBookingParameters() {
+        return Stream.of(
+                Arguments.of(null, LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2)),
+                Arguments.of("1", null, LocalDateTime.now().plusHours(2)),
+                Arguments.of("1", LocalDateTime.now().plusHours(1), null)
+        );
     }
 
     @Test
-    void shouldNotBookRoomWhenEndBeforeStart() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = now.plusHours(2);
-        LocalDateTime end = now.plusHours(1);
+    void shouldReturnAvailableRooms() {
+        LocalDateTime startTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime endTime = startTime.plusHours(2);
 
-        when(timeProvider.now()).thenReturn(now);
+        Room room1 = mock(Room.class);
+        Room room2 = mock(Room.class);
+        when(roomRepository.findAll()).thenReturn(List.of(room1, room2));
 
-        assertThatThrownBy(() ->
-                bookingSystem.bookRoom("A101", start, end, "user@example.com"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("end time must be after start time");
+        when(room1.isAvailable(startTime, endTime)).thenReturn(true);
+        when(room2.isAvailable(startTime, endTime)).thenReturn(false);
+
+        when(room1.getId()).thenReturn("1");
+        when(room2.getId()).thenReturn("2");
+
+        var availableRooms = bookingSystem.getAvailableRooms(startTime, endTime);
+
+        assertThat(availableRooms).hasSize(1);
+        assertThat(availableRooms.get(0).getId()).isEqualTo("1");
     }
 
     @Test
-    void shouldReturnFalseIfRoomNotAvailable() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = now.plusHours(1);
-        LocalDateTime end = now.plusHours(2);
+    void shouldCancelBookingSuccessfully() throws NotificationException {
+        LocalDateTime startTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime endTime = startTime.plusHours(2);
+        Booking booking = new Booking("booking-id", "1", startTime, endTime);
+        room.addBooking(booking);
 
-        when(timeProvider.now()).thenReturn(now);
-        when(roomRepository.isRoomAvailable(testRoom, start, end)).thenReturn(false);
+        when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+        when(roomRepository.findAll()).thenReturn(List.of(room));
 
-        boolean result = bookingSystem.bookRoom("A101", start, end, "user@example.com");
+        boolean result = bookingSystem.cancelBooking("booking-id");
+
+        assertThat(result).isTrue();
+        verify(roomRepository).save(any(Room.class));
+        verify(notificationService).sendCancellationConfirmation(any(Booking.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCancellingStartedOrFinishedBooking() {
+        LocalDateTime startTime = LocalDateTime.now().minusHours(1);
+        LocalDateTime endTime = LocalDateTime.now().minusMinutes(30);
+        Booking booking = new Booking("booking-id", "1", startTime, endTime);
+        room.addBooking(booking);
+
+        when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+        when(roomRepository.findAll()).thenReturn(List.of(room));
+
+        assertThatThrownBy(() -> bookingSystem.cancelBooking("booking-id"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Kan inte avboka påbörjad eller avslutad bokning");
+    }
+
+    @Test
+    void shouldReturnFalseWhenBookingIdNotFound() {
+        boolean result = bookingSystem.cancelBooking("invalid-booking-id");
 
         assertThat(result).isFalse();
-        verify(notificationService, never()).notifyUser(anyString());
     }
 
     @Test
-    void shouldReturnFalseIfRoomIdDoesNotExist() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = now.plusHours(1);
-        LocalDateTime end = now.plusHours(2);
+    void shouldReturnFalseWhenRoomIsUnavailable() throws NotificationException {
+        LocalDateTime startTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime endTime = startTime.plusHours(2);
 
-        when(timeProvider.now()).thenReturn(now);
-        when(roomRepository.getRoomById("INVALID")).thenReturn(Optional.empty());
+        // Mocka Room-objektet korrekt
+        Room roomMock = mock(Room.class);
+        when(roomMock.isAvailable(startTime, endTime)).thenReturn(false);
 
-        assertThatThrownBy(() ->
-                bookingSystem.bookRoom("INVALID", start, end, "user@example.com"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Room not found");
+        when(roomRepository.findById("1")).thenReturn(Optional.of(roomMock));
+
+        when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+
+        boolean result = bookingSystem.bookRoom("1", startTime, endTime);
+
+        assertThat(result).isFalse();
+
+        verify(roomRepository, never()).save(any(Room.class));
+        verify(notificationService, never()).sendBookingConfirmation(any(Booking.class));
     }
-
-    @Test
-    void shouldStillSucceedIfNotificationFails() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = now.plusHours(1);
-        LocalDateTime end = now.plusHours(2);
-
-        when(timeProvider.now()).thenReturn(now);
-        when(roomRepository.isRoomAvailable(testRoom, start, end)).thenReturn(true);
-        doThrow(new RuntimeException("Notification error")).when(notificationService).notifyUser("user@example.com");
-
-        boolean result = bookingSystem.bookRoom("A101", start, end, "user@example.com");
-
-        assertThat(result).isTrue();  // Booking should still succeed
-    }
-
 
 }
 
