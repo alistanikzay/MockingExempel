@@ -69,12 +69,12 @@ public class BookingSystemTest {
         LocalDateTime start = now.plusHours(2);
         LocalDateTime end = now.plusHours(1);
 
-        when(timeProvider.now()).thenReturn(now);
+        when(timeProvider.getCurrentTime()).thenReturn(now);
 
         assertThatThrownBy(() ->
                 bookingSystem.bookRoom("A101", start, end, "user@example.com"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("end time must be after start time");
+                .hasMessageContaining("Sluttid måste vara efter starttid");
     }
 
     @Test
