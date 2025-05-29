@@ -61,6 +61,20 @@ public class BookingSystemTest {
                 .hasMessageContaining("start time must be in the future");
     }
 
+    @Test
+    void shouldNotBookRoomWhenEndBeforeStart() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.plusHours(2);
+        LocalDateTime end = now.plusHours(1);
+
+        when(timeProvider.now()).thenReturn(now);
+
+        assertThatThrownBy(() ->
+                bookingSystem.bookRoom("A101", start, end, "user@example.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("end time must be after start time");
+    }
+
 
 
 }
