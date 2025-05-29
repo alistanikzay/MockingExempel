@@ -90,6 +90,21 @@ public class BookingSystemTest {
         verify(notificationService, never()).notifyUser(anyString());
     }
 
+    @Test
+    void shouldReturnFalseIfRoomIdDoesNotExist() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.plusHours(1);
+        LocalDateTime end = now.plusHours(2);
+
+        when(timeProvider.now()).thenReturn(now);
+        when(roomRepository.getRoomById("INVALID")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                bookingSystem.bookRoom("INVALID", start, end, "user@example.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Room not found");
+    }
+
 
 
 
