@@ -1,5 +1,7 @@
 package org.example;
 
-public class TimeProvider {
+import java.time.LocalDateTime;
 
+public interface TimeProvider {
+    LocalDateTime getCurrentTime();
 }
