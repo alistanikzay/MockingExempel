@@ -55,7 +55,7 @@ public class BookingSystemTest {
         LocalDateTime pastStart = now.minusHours(2);
         LocalDateTime pastEnd = now.minusHours(1);
 
-        when(timeProvider.now()).thenReturn(now);
+        when(timeProvider.getCurrentTime()).thenReturn(now);
 
         assertThatThrownBy(() ->
                 bookingSystem.bookRoom("A101", pastStart, pastEnd, "user@example.com"))
