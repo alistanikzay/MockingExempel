@@ -105,7 +105,20 @@ public class BookingSystemTest {
                 .hasMessageContaining("Room not found");
     }
 
+    @Test
+    void shouldStillSucceedIfNotificationFails() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.plusHours(1);
+        LocalDateTime end = now.plusHours(2);
 
+        when(timeProvider.now()).thenReturn(now);
+        when(roomRepository.isRoomAvailable(testRoom, start, end)).thenReturn(true);
+        doThrow(new RuntimeException("Notification error")).when(notificationService).notifyUser("user@example.com");
+
+        boolean result = bookingSystem.bookRoom("A101", start, end, "user@example.com");
+
+        assertThat(result).isTrue();  // Booking should still succeed
+    }
 
 
 }
