@@ -9,4 +9,9 @@ public interface RoomRepository {
     List<Room> findAll();
     void save(Room room);
 
+    Object isRoomAvailable(Room testRoom, LocalDateTime start, LocalDateTime end);
+
+    Object getRoomById(String invalid);
+    void delete(String id);
+
 }

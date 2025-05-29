@@ -7,7 +7,6 @@ import org.mockito.MockitoAnnotations;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 public class BookingSystemTest {
@@ -47,4 +46,23 @@ public class BookingSystemTest {
         assertThat(result).isTrue();
         verify(notificationService).sendBookingConfirmation(any(Booking.class));
     }
+
+    @Test
+    void shouldNotBookRoomInThePast() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime pastStart = now.minusHours(2);
+        LocalDateTime pastEnd = now.minusHours(1);
+
+        when(timeProvider.now()).thenReturn(now);
+
+        assertThatThrownBy(() ->
+                bookingSystem.bookRoom("A101", pastStart, pastEnd, "user@example.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("start time must be in the future");
+    }
+
+
+
 }
+
+
