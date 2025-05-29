@@ -14,4 +14,6 @@ public interface RoomRepository {
     Object getRoomById(String invalid);
 
 
+    Object findRoomByName(String a101);
+
 }

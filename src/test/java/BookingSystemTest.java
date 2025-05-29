@@ -120,14 +120,16 @@ public class BookingSystemTest {
         LocalDateTime start = now.plusHours(1);
         LocalDateTime end = now.plusHours(2);
 
-        when(timeProvider.now()).thenReturn(now);
+        when(timeProvider.getCurrentTime()).thenReturn(now);
+        when(roomRepository.findById("A101")).thenReturn(Optional.of(testRoom));
         when(roomRepository.isRoomAvailable(testRoom, start, end)).thenReturn(true);
         doThrow(new RuntimeException("Notification error")).when(notificationService).notifyUser("user@example.com");
 
         boolean result = bookingSystem.bookRoom("A101", start, end, "user@example.com");
 
-        assertThat(result).isTrue();  // Booking should still succeed
+        assertThat(result).isTrue();
     }
+
 
 
 }
