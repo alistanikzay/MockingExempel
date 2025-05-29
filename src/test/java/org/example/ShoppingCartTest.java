@@ -59,7 +59,7 @@ class ShoppingCartTest {
     }
 
     @Test
-    void applyDiscount_shouldReturnDiscountedTotal() {
+    void applyDiscount_withValidPercentage_shouldCalculateReducedTotal() {
         cart.addItem("Apple", 10.0, 2);  // 20
         cart.addItem("Banana", 5.0, 3);  // 15
 
