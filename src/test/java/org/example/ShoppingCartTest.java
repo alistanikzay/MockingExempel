@@ -25,7 +25,7 @@ class ShoppingCartTest {
     }
 
     @Test
-    void addItem_shouldIncreaseQuantityWhenItemExists() {
+    void addItem_whenSameItemAddedAgain_shouldAccumulateQuantity() {
         cart.addItem("Apple", 10.0, 2);
         cart.addItem("Apple", 10.0, 3);
 
