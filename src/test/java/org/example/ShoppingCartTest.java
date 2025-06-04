@@ -36,6 +36,19 @@ class ShoppingCartTest {
                 .containsExactly(tuple("Apple", 5));
     }
 
+    @Test
+    void shouldRemoveItemFromCart() {
+        cart.addItem("Apple", 10.0, 2);
+        cart.addItem("Banana", 5.0, 1);
+
+        cart.removeItem("Apple");
+
+        assertThat(cart.getItems())
+                .hasSize(1)
+                .extracting(Item::getName)
+                .doesNotContain("Apple");
+    }
+
 
 
 }
