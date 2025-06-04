@@ -37,11 +37,13 @@ public class ShoppingCart {
     }
 
     public double applyDiscount(double percentage) {
+        if (percentage < 0) {
+            return calculateTotal();
+        }
+
         double total = calculateTotal();
         double discountAmount = total * (percentage / 100);
         return total - discountAmount;
     }
-
-
 
 }
