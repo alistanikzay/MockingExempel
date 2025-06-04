@@ -69,5 +69,14 @@ class ShoppingCartTest {
         assertThat(discounted).isEqualTo(31.5);
     }
 
+    @Test
+    void shouldReturnSameTotalIfZeroDiscount() {
+        cart.addItem("Apple", 10.0, 1);
+
+        double discounted = cart.applyDiscount(0);
+
+        assertThat(discounted).isEqualTo(10.0);
+    }
+
 
 }
