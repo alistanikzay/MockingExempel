@@ -7,6 +7,10 @@ public class ShoppingCart {
     private final List<Item> items = new ArrayList<>();
 
     public void addItem(String name, double price, int quantity) {
+        if (quantity <= 0) {
+            return;
+        }
+
         for (Item item : items) {
             if (item.getName().equals(name)) {
                 item.setQuantity(item.getQuantity() + quantity);
