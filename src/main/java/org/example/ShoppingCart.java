@@ -24,6 +24,15 @@ public class ShoppingCart {
         return items;
     }
 
+    public double calculateTotal() {
+        double total = 0;
+        for (Item item : items) {
+            total += item.getPrice() * item.getQuantity();
+        }
+        return total;
+    }
+
+
 
 
 }
