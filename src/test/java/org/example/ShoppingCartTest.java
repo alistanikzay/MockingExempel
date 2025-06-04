@@ -94,5 +94,13 @@ class ShoppingCartTest {
         assertThat(discounted).isLessThanOrEqualTo(0);
     }
 
+    @Test
+    void shouldNotAddItemWithNegativeQuantity() {
+        cart.addItem("Apple", 10.0, -3);
+
+        assertThat(cart.getItems()).isEmpty();
+    }
+
+
 
 }
