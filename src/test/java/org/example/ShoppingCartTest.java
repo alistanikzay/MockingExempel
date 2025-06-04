@@ -49,5 +49,15 @@ class ShoppingCartTest {
                 .doesNotContain("Apple");
     }
 
+    @Test
+    void shouldCalculateTotalPriceCorrectly() {
+        cart.addItem("Apple", 10.0, 2);  // 20
+        cart.addItem("Banana", 5.0, 3);  // 15
+
+        double total = cart.calculateTotal();
+
+        assertThat(total).isEqualTo(35.0);
+    }
+
 
 }
