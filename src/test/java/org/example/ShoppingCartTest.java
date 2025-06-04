@@ -101,6 +101,16 @@ class ShoppingCartTest {
         assertThat(cart.getItems()).isEmpty();
     }
 
+    @Test
+    void shouldNotAllowNegativeDiscount() {
+        cart.addItem("Apple", 10.0, 1);
+
+        double discounted = cart.applyDiscount(-20);
+
+        assertThat(discounted).isEqualTo(10.0);
+    }
+
+
 
 
 }
