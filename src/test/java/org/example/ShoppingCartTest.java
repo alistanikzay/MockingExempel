@@ -85,5 +85,14 @@ class ShoppingCartTest {
         assertThat(cart.getItems()).isEmpty();
     }
 
+    @Test
+    void shouldNotAllowDiscountOver100Percent() {
+        cart.addItem("Apple", 10.0, 1);
+
+        double discounted = cart.applyDiscount(150);
+
+        assertThat(discounted).isLessThanOrEqualTo(0);
+    }
+
 
 }
