@@ -25,6 +25,17 @@ class ShoppingCartTest {
                 .containsExactly(tuple("Apple", 10.0, 2));
     }
 
+    @Test
+    void shouldIncreaseQuantityIfSameItemAdded() {
+        cart.addItem("Apple", 10.0, 2);
+        cart.addItem("Apple", 10.0, 3);
+
+        assertThat(cart.getItems())
+                .hasSize(1)
+                .extracting(Item::getName, Item::getQuantity)
+                .containsExactly(tuple("Apple", 5));
+    }
+
 
 
 }
