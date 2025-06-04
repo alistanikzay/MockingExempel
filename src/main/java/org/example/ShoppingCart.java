@@ -32,6 +32,11 @@ public class ShoppingCart {
         return total;
     }
 
+    public double applyDiscount(double percentage) {
+        double total = calculateTotal();
+        double discountAmount = total * (percentage / 100);
+        return total - discountAmount;
+    }
 
 
 
