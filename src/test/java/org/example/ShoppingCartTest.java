@@ -14,5 +14,17 @@ class ShoppingCartTest {
         cart = new ShoppingCart();
     }
 
+    @Test
+    void shouldAddNewItemToEmptyCart() {
+        ShoppingCart cart = new ShoppingCart();
+        cart.addItem("Apple", 10.0, 2);
+
+        assertThat(cart.getItems())
+                .hasSize(1)
+                .extracting(Item::getName, Item::getPrice, Item::getQuantity)
+                .containsExactly(tuple("Apple", 10.0, 2));
+    }
+
+
 
 }
