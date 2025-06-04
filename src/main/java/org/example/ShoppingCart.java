@@ -16,6 +16,10 @@ public class ShoppingCart {
         items.add(new Item(name, price, quantity));
     }
 
+    public void removeItem(String name) {
+        items.removeIf(item -> item.getName().equals(name));
+    }
+
     public List<Item> getItems() {
         return items;
     }
