@@ -59,5 +59,15 @@ class ShoppingCartTest {
         assertThat(total).isEqualTo(35.0);
     }
 
+    @Test
+    void shouldApplyPercentageDiscountCorrectly() {
+        cart.addItem("Apple", 10.0, 2);  // 20
+        cart.addItem("Banana", 5.0, 3);  // 15
+
+        double discounted = cart.applyDiscount(10); // 10% av 35 = 3.5
+
+        assertThat(discounted).isEqualTo(31.5);
+    }
+
 
 }
